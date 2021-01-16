@@ -273,5 +273,51 @@ Create a form and put the logout li there and make it button
 </form>
 </li>
 
+```
+## Middleware -> use for dashboard, login, and logout controller
+```
+@Dashboard => Dashboard controller:
+public function __construct()
+    {
+        $this->middleware(['auth']);
+    }
+
+@Auth => Logout Controller:
+public function store(){
+       auth()->logout();
+
+@Guest => RegisterController and LoginController
+public function __construct(){
+        $this->middleware(['guest']);
+    }
+```
+
+## Remember me
+```
+   <div class="mb-4">
+	<div class="flex items-center">
+	    <input type="checkbox" name="remember" id="remember" class="mr-2">
+	    <label for="remember"> Remember me </label>
+	</div>
+   </div>
+   
+   -> auth -> LoginController->
+       
+       public function store(request $request){
+
+		$this ->validate($request, [
+		    'email' => 'required|email',
+		    'password'=> 'required',
+
+		]);
+
+		if(!auth()->attempt($request->only('email', 'password'), $request -> remember)){
+		    //for remember me we should pass to the second argument
+		    return back()->with('status', 'Invalid login details');
+		}
+
+		return redirect()->route('dashboard');
+    }
 
 ```
+
