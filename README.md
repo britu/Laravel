@@ -320,4 +320,116 @@ public function __construct(){
     }
 
 ```
+## Posts Forms and controller
+```
+view->posts->index.blade.php
+@extends('layouts.app')
+
+@section('content')
+
+<div class="flex justify-center">
+    <div class="w-8/12 bg-white p-6 rounded-lg">
+
+        <form action="{{ route('posts')}}" method="post">
+            @csrf
+            <div class="mb-4">
+                <label for="body" class="sr-only">Body</label>
+                <textarea name="body" id="body" cols="30" rows="4" class="bg-gray-100 border-2 w-full p-4 rounded-lg @error('body') border-red-500 @enderror" placeholder="Post Something!"></textarea>
+                @error('body')
+                    <div class="text-red-500 mt-2 text-sm">
+                        {{$message}}
+                    </div>
+                @enderror
+            </div>
+
+            <button type="submit" class="bg-blue-500 text-white px-4 py-3 rounded font-medium">Post</button>
+        </form>
+
+
+    </div>
+</div>
+
+@endsection
+
+
+Create PostController:
+class PostController extends Controller
+{
+    public function index()
+    {
+        return view('posts.index');
+    }
+    public function store(Request $request){
+        dd('ok');
+    }
+}
+
+Web.php
+Route::get('/posts', [PostController::class, 'index'])-> name('posts');
+Route::post('/posts', [PostController::class, 'store']);
+```
+
+## Setting Up Post [Model]
+```
+	php artisan make:model => there is more easy way
+	php artisan make:model Post --help
+must do:- php artisan make:model Post -m -f [Create table and migration]
+
+--> Go to the migrations and amend the matter and run the migration
+ public function up()
+    {
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->constrained()->OnDelete('cascade');
+            $table->text('body');
+            $table->timestamps();
+        });
+    }
+
+Description:
+  Create a new Eloquent model class
+
+Usage:
+  make:model [options] [--] <name>
+
+Arguments:
+  name                  The name of the class
+
+Options: ability to do anythings
+  -a, --all             Generate a migration, seeder, factory, and resource controller for the model
+  -c, --controller      Create a new controller for the model
+  -f, --factory         Create a new factory for the model
+      --force           Create the class even if the model already exists
+  -m, --migration       Create a new migration file for the model
+  -s, --seed            Create a new seeder file for the model
+  -p, --pivot           Indicates if the generated model should be a custom intermediate table model
+  -r, --resource        Indicates if the generated controller should be a resource controller
+      --api             Indicates if the generated controller should be an API controller
+  -h, --help            Display help for the given command. When no command is given display help for the list command
+  -q, --quiet           Do not output any message
+  -V, --version         Display this application version
+      --ansi            Force ANSI output
+      --no-ansi         Disable ANSI output
+  -n, --no-interaction  Do not ask any interactive question
+      --env[=ENV]       The environment the command should run under
+  -v|vv|vvv, --verbose  Increase the verbosity of messages: 1 for normal output, 2 for more verbose output and 3 for debug
+
+```
+
+## User Post Relationship
+```
+Go to the User Model -> and write 
+	
+	public function posts(){
+        	return $this->hasMany(Post::class);
+    	}
+- Go to the DashboardController-> 
+	dd(auth()->user()->posts); [has many collection return]-> we shoud do this.
+	dd(auth()->user()->posts()); [Has many object return]
+Try it using sign in then see the power of collection of posts by filling the database
+```
+## Creating a Post
+
+
+
 
