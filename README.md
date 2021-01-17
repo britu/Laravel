@@ -1,3 +1,19 @@
+ ### public function likedBy(User $user)
+    {
+        return $this->likes->contains('user_id', $user->id); //it is a collection method
+    }
+//Potentially checking weather user like something
+
+#### $request->user() -> Currently authenticate user
+#### $this -> likes -> internally access the likes relationship
+#### $this -> likes -> contains() this is a Laravel collection method, which allow us to look inside the object
+#### $this -> likes -> contains('user_id', $user->id) at a particular key, at the user Id and check like within the particular likes Model 
+	Basically returns true or false value
+	dd($post->likedBy($request->user()));
+------------------------------------
+
+
+
 # Route View and Layout
 ## Views and Layout:
 ```
@@ -513,6 +529,111 @@ It generate fake text for 200
 
 ## Liking and unliking post
 ```
+Post.index.blade.php -> inbetween posts write two form with Cross site r frozery
+   <div class="flex items-center">
+	<form action="" method="post" class="mr-1">
+	    @csrf
+	    <button type="submit" class="text-blue-500">Like</button>
+	</form>
+
+	<form action="" method="post" class="mr-1">
+	    @csrf
+	    <button type="submit" class="text-blue-500">Unlike</button>
+	</form>
+    </div>
+
+=> make a migration table from command line
+	- php artisan make:migration create_likes_table --create=likes
+	Go to the Create likes table migration and filled in
+	We want foreign id inside our like table because liked is performed by a user and like is performed on post as well.
+	  	public function up()
+	    	{
+			Schema::create('likes', function (Blueprint $table) {
+			    $table->id();
+			    $table->foreignId('user_id')->constrained()->OnDelete('cascade');
+			    $table->foreignId('post_id')->constrained()->OnDelete('cascade');
+			    $table->timestamps();
+			});
+		    }
+
+	--> Now go and migrate [ php artisan migration ]
+	--> first of all go to the -> Post Model -> create a likes relationship
+		public function likes()
+		    {
+			return $this->hasMany(Like::class);
+		    }
+	--> Create a Like Model [php artisan make:model Like]
+	Fill out some data onto likes database
+	
+	-> Now get count likes
+	 </form>
+            <span>{{$post->likes->count()}} {{Str::plural('like', $post->likes->count())}}</span>
+------------------
+	-> Now actually look liking this now --> Create a relationship with User Model
+		public function likes()
+		    {
+			return $this->hasMany(like::class);
+		    }
+	->  Now create PostlikeController [php artisan make:controller PostLikeController]
+	-> PostLikeController -> 
+	
+	-> Route->Web 
+	Route::get('/posts/{id}/likes', [PostLikeController::class, 'store'])-> name('posts.likes');
+	OR
+	Prefered way is:
+				|->Post model and you have optional 1 or 2
+	Route::post('/posts/post/likes', [PostLikeController::class, 'store'])-> name('posts.likes');
+	--> PostLikeController-> 
+		class PostLikeController extends Controller
+			{
+			    public function store(Post $post, Request $request)//this is model
+			    {
+
+				if($post->likedBy($request->user())){
+				    return response(null, 409);
+				}
+
+
+				$post->likes()->create([
+				    'user_id' => $request->user()->id,
+				]);
+
+				return back();
+			    }
+			}
+
+	--> Post Model and make user_id fillable
+	class Like extends Model
+		{
+		    use HasFactory;
+
+		    protected $fillable = [
+			'user_id'
+		    ]
+		}
+	
+	--> Post Model ->
+	public function likedBy(User $user)
+	    {
+		return $this->likes->contains('user_id', $user->id); //it is a collection method
+	    }
+	--> View.posts->index.blade.php
+		
+		<div class="flex items-center">
+                        @if(!$post->likedBy(auth()->user()))
+                            <form action="{{ route('posts.likes', $post->id)}}" method="post" class="mr-1">
+                                @csrf
+                                <button type="submit" class="text-blue-500">Like</button>
+                            </form>
+                        @else
+                            <form action="" method="post" class="mr-1">
+                                @csrf
+                                <button type="submit" class="text-blue-500">Unlike</button>
+                            </form>
+                            <span>{{$post->likes->count()}} {{Str::plural('like', $post->likes->count())}}</span>
+                        @endif
+                    </div>
+
 ```
 
 
