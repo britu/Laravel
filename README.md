@@ -418,6 +418,16 @@ Options: ability to do anythings
 
 ## User Post Relationship
 ```
+-> Post Model -> and write fillable
+class Post extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'body'
+    ];
+}
+
 Go to the User Model -> and write 
 	
 	public function posts(){
@@ -426,9 +436,87 @@ Go to the User Model -> and write
 - Go to the DashboardController-> 
 	dd(auth()->user()->posts); [has many collection return]-> we shoud do this.
 	dd(auth()->user()->posts()); [Has many object return]
+	
 Try it using sign in then see the power of collection of posts by filling the database
 ```
+
 ## Creating a Post
+```
+Collection is warapper of list of items
+-> create a post and have a look into the database.
+
+for one line 
+Postcontroller-> $request ->user()->posts()->create($request->only('body'));
+```
+## Listing Post
+```
+--> PostController ->   all retrive code send to the posts index
+public function index()
+    {
+        $posts = Post::get(); //all
+        return view('posts.index', [
+            'posts' => $posts
+        ]);
+    }
+---------------
+For user Id: Post Model-> 
+	public function user()
+    	{
+        return $this->belongsTo(User::class);
+   	 }
+--------------
+->Post.index View ->
+<hr>
+@if($posts->count())
+    @foreach ($posts as $post)
+	<div class="mb-4">
+	    <a href="" class="font-bold">{{ $post->user->name}}</a> <Span class="text-gra-600 text-sm">{{$post->created_at->diffForHumans()}}</Span>
+	    <p class="mb-2">{{$post->body}}</p>
+	</div>
+    @endforeach
+@else
+    <p>There are no posts</p>
+@endif
+
+```
+
+## Pagination
+```
+make pagination
+-> PostController ->$posts = Post::paginate(2);
+
+passing pagination link
+{{$posts->links()}}
+
+```
+
+## Seeding with model factory
+```
+working with huge amount of data you don't want to work with Pagination coz we don't have more than 20 to show
+Command line -> [Laravel Tinker] = it is allwo us to run laravel application command line
+[let's put faker data from laravel]
+
+->Go to the PostFactory from database->factories->PostFactory.php
+define the defination:
+public function definition()
+    {
+        return [
+            'body' => $this->faker->sentence(20)
+        ];
+    }
+
+-> Go to the command line -> php artisan tinker
+eg: App\Models\Post::factory()->times(200)->create(['user_id'=>2]);
+exit _|
+It generate fake text for 200
+```
+
+## Liking and unliking post
+```
+```
+
+
+
 
 
 
