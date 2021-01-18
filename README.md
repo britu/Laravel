@@ -3,13 +3,16 @@
         return $this->likes->contains('user_id', $user->id); //it is a collection method
     }
 //Potentially checking weather user like something
-
+{post} on web called post Model binding
+{user} on web called User model binding
 #### $request->user() -> Currently authenticate user
 #### $this -> likes -> internally access the likes relationship
 #### $this -> likes -> contains() this is a Laravel collection method, which allow us to look inside the object
 #### $this -> likes -> contains('user_id', $user->id) at a particular key, at the user Id and check like within the particular likes Model 
 	Basically returns true or false value
 	dd($post->likedBy($request->user()));
+### @method('Delete')//method spoofing
+ {{//$post-> id we dont need to do it because we got Root Model Binding setup}}
 ------------------------------------
 
 
@@ -586,6 +589,12 @@ Post.index.blade.php -> inbetween posts write two form with Cross site r frozery
 	--> PostLikeController-> 
 		class PostLikeController extends Controller
 			{
+			   //authenticate middleware to authenticate user
+			    public function __construct()
+			    {
+				$this->middleware(['auth']);
+			    }
+    
 			    public function store(Post $post, Request $request)//this is model
 			    {
 
@@ -633,11 +642,261 @@ Post.index.blade.php -> inbetween posts write two form with Cross site r frozery
                             <span>{{$post->likes->count()}} {{Str::plural('like', $post->likes->count())}}</span>
                         @endif
                     </div>
+_________________________
+For delete User likes
+--> PostLikeController:
+
+--> Route->web 
+Route::delete('/posts/{post}/likes', [PostLikeController::class, 'destroy'])-> name('posts.likes');
+Put this in the form --> index.blade.php ->
+	<form action="{{ route('posts.likes', $post)}}" method="post" class="mr-1">
+		@csrf
+		@method('DELETE')
+		<button type="submit" class="text-blue-500">Unlike</button>
+   	 </form>
+
+```
+## Edger Loading
+Let's talk about Query Count
+```
+Pull LARAVEL Debugbar:- https://github.com/barryvdh/laravel-debugbar
+Get this and run it:- composer require barryvdh/laravel-debugbar --dev
+->Go to .env -> set debug true [APP_DEBUG=true] in Production environment this set to be FALSE;
+Now How we reduce a query on site. To resolve it pull 1 bundle query [change Pagination query problem]
+--> PostController -> $posts = Post::with(['user', 'likes'])->paginate(5);
+"This is because of Post Model -> User relationship and likes relationship so we loding both before we start itirate through them."
+
+[Now we got to change the post.index.blade.php || @auth and @endauth]
+  <hr>
+	@if($posts->count())
+	    @foreach ($posts as $post)
+		<div class="mb-4">
+		    <a href="" class="font-bold">{{ $post->user->name}}</a> <Span class="text-gra-600 text-sm">{{$post->created_at->diffForHumans()}}</Span>
+		    <p class="mb-2">{{$post->body}}</p>
+
+		    <div class="flex items-center">
+			@auth()
+			    @if(!$post->likedBy(auth()->user()))
+
+				<form action="{{ route('posts.likes', $post)}}" method="post" class="mr-1">
+				    @csrf
+				    <button type="submit" class="text-blue-500">Like</button>
+				</form>
+			    @else
+				<form action="{{ route('posts.likes', $post)}}" method="post" class="mr-1">
+				    @csrf
+				    @method('DELETE')
+				    <button type="submit" class="text-blue-500">Unlike</button>
+				</form>
+			    @endif
+			@endauth()
+				<span>{{$post->likes->count()}} {{Str::plural('like', $post->likes->count())}}</span>
+
+
+		    </div>
+
 
 ```
 
+## Deleting Our Post
+```
+--> PostController.php
+                // Root model binding for this
+	
+	$posts = Post::orderBy('created_at', 'desc')->with(['user', 'likes'])->paginate(5);
+	
+    public function destroy(Post $post)
+    {
+        //dd($post);
+        $post->delete();
+
+        return back();
+    }
+--> Web Route
+Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+
+--> index.blade.php
+<div>
+	<form action="{{ route('posts.destroy', $post) }}" method="post">
+	    @csrf
+	    @method('DELETE')
+	    <button type="submit" class="text-blue-500">Delete</button>
+	</form>
+
+    </div>
+  
+```
+## Authorization for delete for related user
+```
+Post Model
+	public function OwnedBy(User $user)
+	    {
+		//Compare user id to pass here and this means current post user id
+		return $user->id === $this->user_id;
+	    }
+
+index.blade.php 
+	@if($post->ownedBy(auth()->user()))
+		<div>
+		    <form action="{{ route('posts.destroy', $post) }}" method="post">
+			@csrf
+			@method('DELETE')
+			<button type="submit" class="text-blue-500">Delete</button>
+		    </form>
+		</div>
+	    @endif
+
+php artisan make:policy PostPolicy [for clean delete or who can delete post result]
+
+------
+[Need to LEARN on it]
+----
+```
+## User Profile Page
+```
+php artisan make:controller UserPostController
+Vies->posts->index.blade.php
+<a href="{{ route('users.posts', $post->user)}}" class="font-bold">{{ $post->user->name}}</a
+
+[create users profile view]
+make -> views->users->post-> index.blade.php
+copy and paste dashboard template
 
 
+
+
+php artisan make:component Post -> create a component in root folder
+Go to the Component [App -> view -> Components -> Post.php] [DELETE this file]
+Next will be created at views -> components -> polst.bade.php
+copy and paste from posts->index.blade.php and put the props up it
+
+@props(['post' => $post ])
+
+<div class="mb-4">
+    <a href="{{ route('users.posts', $post->user)}}" class="font-bold">{{ $post->user->name}}</a> <Span class="text-gra-600 text-sm">{{$post->created_at->diffForHumans()}}</Span>
+    <p class="mb-2">{{$post->body}}</p>
+
+    @if($post->ownedBy(auth()->user()))
+        <div>
+            <form action="{{ route('posts.destroy', $post) }}" method="post">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="text-blue-500">Delete</button>
+            </form>
+        </div>
+    @endif
+
+    <div class="flex items-center">
+        @auth()
+            @if(!$post->likedBy(auth()->user()))
+
+                <form action="{{ route('posts.likes', $post)}}" method="post" class="mr-1">
+                    @csrf
+                    <button type="submit" class="text-blue-500">Like</button>
+                </form>
+            @else
+                <form action="{{ route('posts.likes', $post)}}" method="post" class="mr-1">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="text-blue-500">Unlike</button>
+                </form>
+            @endif
+
+        @endauth()
+                <span>{{$post->likes->count()}} {{Str::plural('like', $post->likes->count())}}</span>
+
+
+    </div>
+
+</div>
+
+
+Users-> posts->index.blade.php
+	
+	@extends('layouts.app')
+
+		@section('content')
+
+		<div class="flex justify-center">
+		    <div class="w-8/12">
+
+			<div class="p-6">
+			    <h1 class="text-2xl font-medium mb-1">{{$user->name}}</h1>
+			    <p>Posted {{$posts->count()}} {{Str::plural('post', $posts->count())}}</p>
+			</div>
+
+
+			<div class="w-8/12 bg-white p-6 rounded-lg">
+			    @if($posts->count())
+				@foreach ($posts as $post)
+				    <x-post :post="$post"/>
+				@endforeach
+				{{$posts->links()}}
+			    @else
+				<p>{{ $user->name }} does not have any posts</p>
+			    @endif
+
+			</div>
+		    </div>
+		</div>
+
+		@endsection
+
+Same in index.blade.php of posts
+
+ 	<hr>
+		@if($posts->count())
+		    @foreach ($posts as $post)
+			<x-post :post="$post"/>
+		    @endforeach
+		    {{$posts->links()}}
+		@else
+		    <p>{{ $user->name }} does not have any posts</p>
+		@endif
+
+```
+## Like Count Eloqoint Relationship
+```
+-> User Model -> 
+ public function receivedLikes()
+    {
+        return $this->hasManyThrough(Like::class, Post::class);
+    }
+ 
+ -> User index.blade.php
+      <div class="p-6">
+            <h1 class="text-2xl font-medium mb-1">{{$user->name}}</h1>
+            <p>Posted {{$posts->count()}} {{Str::plural('post', $posts->count())}}
+                and received {{ $user->receivedLikes->count()}} likes</p>
+        </div>
+
+```
+
+## Single Post for individual page
+```
+Note: to show nice and restful let's create a Show method here which will take Post in via route Binding
+Return view here something like posts.show, [] and it gonna past that post down to that view. So we can see information
+about the particular post.
+
+-> PostController.php
+
+	 public function show(Post $post)
+	    {
+		return view('posts.show', [
+		    'post' => $post
+		]);
+	    }
+
+Create the page that in views -> posts-> show.blade.php and copy paset dashboard.blade.php
+
+--> go to the web route -> Route::get('/posts/{post}', [PostController::class, 'show'])-> name('posts.show');
+
+
+```
+## Sending email when it's liked
+```
+
+```
 
 
 
