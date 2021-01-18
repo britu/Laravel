@@ -1,4 +1,5 @@
- ### public function likedBy(User $user)
+### Fasad is wrapper for functionality
+### public function likedBy(User $user)
     {
         return $this->likes->contains('user_id', $user->id); //it is a collection method
     }
@@ -893,11 +894,147 @@ Create the page that in views -> posts-> show.blade.php and copy paset dashboard
 
 
 ```
-## Sending email when it's liked
+
+## Sending email when it's liked //Markdown Mail
+Create an account in mailtrap.io
 ```
+php artisan make:mail --help
+php artisan make:mail PostLiked --markdown=emails.posts.post_liked
+
+.env [setup]
+	MAIL_MAILER=smtp
+	MAIL_HOST=smtp.mailtrap.io
+	MAIL_PORT=2525
+	MAIL_USERNAME=dd9bd78768b08c
+	MAIL_PASSWORD=abc2e41bf7e62a
+	MAIL_ENCRYPTION=null
+	MAIL_FROM_ADDRESS=britulama@icloud.com
+	MAIL_FROM_NAME="${APP_NAME}"
+
+-> PostLikedController-> Mail::to($post->user)->send(new PostLiked(auth()->user(), $post));
+-> Go to the PostLiked Mail
+<?php
+
+namespace App\Mail;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Mail\Mailable;
+use Illuminate\Queue\SerializesModels;
+
+class PostLiked extends Mailable
+{
+    use Queueable, SerializesModels;
+
+    public $liker;
+    public $post;
+    /**
+     * Create a new message instance.
+     *
+     * @return void
+     */
+    public function __construct(User $liker, Post $post)
+    {
+        $this->liker = $liker;
+        $this->post = $post;
+    }
+
+    /**
+     * Build the message.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+        return $this->markdown('emails.posts.post_liked')->subject('Someone liked your post');
+    }
+}
+
+-> post_liked.blade.php
+<?php
+
+namespace App\Mail;
+
+use App\Models\Post;
+use App\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Mail\Mailable;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Contracts\Queue\ShouldQueue;
+
+class PostLiked extends Mailable
+{
+    use Queueable, SerializesModels;
+
+    public $liker;
+    public $post;
+    /**
+     * Create a new message instance.
+     *
+     * @return void
+     */
+    public function __construct(User $liker, Post $post)
+    {
+        $this->liker = $liker;
+        $this->post = $post;
+    }
+
+    /**
+     * Build the message.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+        return $this->markdown('emails.posts.post_liked')->subject('Someone liked your post');
+    }
+}
+
 
 ```
+## Soft Deleting Model
+```
+php artisan make:migration add_soft_deletes_to_likes_table --table=likes
+<?php
 
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class AddSoftDeletesToLikesTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::table('likes', function (Blueprint $table) {
+            $table->softDeletes(); // deleted at timestamp
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table('likes', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
+    }
+}
+
+php artisan migrate
+
+-> PostLikeController
+  if(!$post->likes()->onlyTrashed()->where('user_id', $request->user()->id->count())){
+            Mail::to($post->user)->send(new PostLiked(auth()->user(), $post));
+        }
+```
 
 
 
