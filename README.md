@@ -268,36 +268,38 @@ password => Hass::make($request → password), Facades
 ]);
 Return redirect() -> route(‘dashboard’); → #
 
-//Sign in
-auth() ->attempt($request->only(‘email’, ‘password’);
-
-))
-
-Go to the register.blade.php and write error
-@error(‘name’)
-	<div class =”danger”>
-	{{ $message }}
-</div>
-@enderror
-
 
 ```
-
-## Dashboard controller
+## Signing in after Registration and making dashboard for signing in 
 ```
-# Route::get('/dashboard, [DashboardController::class, 'index']) -> name('dashboard');
-Php artisan make:controller DashboardController
-	Open it and 
+php artisan make:controller DashboardController
+-->DashboardController.php ->
 	Public function index(){
-		Return view(‘dashboard’);
-	}
-	Import the DashboardController
-	Then create views
-	Dashboard.blade.php
-	Layout copy and paste
+			Return view(‘dashboard’);
+		}
+		
+--> Create View -> dashboard.blade.php
+	@extends('layouts.app')
 
+	@section('content')
+
+	<div class="flex justify-center">
+	    <div class="w-8/12 bg-white p-6 rounded-lg">
+		Dashboard
+	    </div>
+	</div>
+
+	@endsection
+	
+--> Go to the Route->web-> Route::get('/dashboard', [DashboardController::class, 'index'])-> name('dashboard');
+
+--> Register Controller -> before redirect to dashboard
+//to put user sine ined
+        auth()->attempt($request->only('email', 'password'));
+	
 
 ```
+
 ### dashboard signed in two method Fasad or Auth helper
 ```
  auth()->attempt([
