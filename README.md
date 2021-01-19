@@ -109,7 +109,26 @@ Npm install → npm install tailwind → npm run dev → npm watch
 	@extends('layouts.app')
 
 	@section('content')
-	Index page
+	<div class="flex justify-center">
+	    <div class="w-8/12 bg-white p-6 rounded-lg">
+
+		    <form action="" method="post" class="mb-4">
+
+			<div class="mb-4">
+			    <label for="body" class="sr-only">Body</label>
+			    <textarea name="body" id="body" cols="30" rows="4" class="bg-gray-100 border-2 w-full p-4 rounded-lg" placeholder="Post Something!"></textarea>
+
+			</div>
+
+			<button type="submit" class="bg-blue-500 text-white px-4 py-3 rounded font-medium">Post</button>
+		    </form>
+
+
+		<hr>
+
+
+	    </div>
+	</div>
 
 	@endsection
 
@@ -166,7 +185,7 @@ Npm install → npm install tailwind → npm run dev → npm watch
 Php artisan migrate 
 
 Q.  add column username to users table
-    Php artisan make:migration add_username-to-users-table
+    Php artisan make:migration add_username_to_users_table
   --> Automatically create scaffolding code and it determines → go to the database → migration → you find the file created. Lets add the table user name
   
   In Up migration :        
