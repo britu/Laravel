@@ -57,6 +57,109 @@ Npm install → npm install tailwind → npm run dev → npm watch
  copy the 3 lists above and paste it to the resources → css → and run npm run dev → it will link up to the public css link to it
 
 ```
+## Styling and Layout
+```
+-> Layouts->app.blade.php
+<!DOCTYPE html>
+<html>
+<head>
+	<title>App layout</title>
+	<link rel="stylesheet" href="{{ asset('css/app.css')}}">
+</head>
+<body class="bg-gray-200">
+
+	<nav class="p-6 bg-white flex justify-between mb-4">
+
+		<ul class="flex items-center">
+
+			<li>
+				<a href="" class="p-3">Home</a>
+				<a href="" class="p-3">Dashboard</a>
+				<a href="#" class="p-3">Post</a>
+			</li>
+		</ul>
+		<ul class="flex items-center">
+
+			@auth
+				<li><a href="" class="p-3">Britu</a></li>
+				<li>
+					<form action="{{ route('logout') }}" method="post" class="inline p-3">
+						@csrf
+						<button type="submit">Log Out</button>
+					</form>
+					
+				</li>
+			@endauth
+
+			@guest
+				<li><a href="" class="p-3">Log In</a></li>
+				<li><a href="" class="p-3">Register</a></li>
+			@endguest
+			
+		</ul>
+		</ul>
+	</nav>
+
+	@yield('content')
+</body>
+</html>
+
+
+-> Posts-> index.blade.php
+	@extends('layouts.app')
+
+	@section('content')
+	Index page
+
+	@endsection
+
+-> auth->register.blade.php
+@extends('layouts.app')
+
+@section('content')
+
+<div class="flex justify-center ">
+	<div class="w-4/12 bg-white p-6 rounded-lg">
+		<form action="{{ route('register') }}" method="post">
+			@csrf
+			<div class="mb-4">
+				<label for="name" class="sr-only">Name</label>
+				<input type="text" name="name" id="name" placeholder="Your name" class="bg-gray-100 border-2 w-full p-4 rounded-lg @error('name')border-red-500 @enderror" value="">
+				@error('name')
+					<div class="text-red-500 mt-2 text-sm">
+						{{ $message }}
+					</div>
+				@enderror
+			</div>
+
+			<div class="mb-4">
+				<label for="username" class="sr-only">User name</label>
+				<input type="text" name="username" id="username" placeholder="Your User name" class="bg-gray-100 border-2 w-full p-4 rounded-lg" value="">
+			</div>
+
+			<div class="mb-4">
+				<label for="email" class="sr-only">Email</label>
+				<input type="text" name="email" id="email" placeholder="Your Email" class="bg-gray-100 border-2 w-full p-4 rounded-lg" value="">
+			</div>
+
+			<div class="mb-4">
+				<label for="name" class="sr-only">password</label>
+				<input type="password" name="password" id="password" placeholder="Place your password" class="bg-gray-100 border-2 w-full p-4 rounded-lg" value="">
+			</div>
+
+			<div class="mb-4">
+				<label for="Password Again" class="sr-only">Password Againe</label>
+				<input type="password" name="password_confirmation" id="password_confirmation" placeholder="Your name" class="bg-gray-100 border-2 w-full p-4 rounded-lg" value="">
+			</div>
+
+			<button type="submit" class="bg-blue-500 text-white px-4 py-3 rounded font-medium w-full">Register</button>
+
+		</form>
+	</div>
+</div>
+
+@endsection
+```
 ## Running Migration:
 ```
 .env file → change hostname and password
