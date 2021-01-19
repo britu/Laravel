@@ -296,56 +296,38 @@ php artisan make:controller DashboardController
 --> Register Controller -> before redirect to dashboard
 //to put user sine ined
         auth()->attempt($request->only('email', 'password'));
-	
-
-```
-
-### dashboard signed in two method Fasad or Auth helper
-```
- auth()->attempt([
+		[OR]
+	 auth()->attempt([
     		'email' => $request -> email,
     		'password' => $request -> password,
     	]);
 
-OR
-For die dump => dd($request->only('email', 'password'));
-
-auth()->attempt($request->only('email', 'password'));
-
-To check weather you sign in or not then go to
-→ DashboardController.php → inside public function index(){
-	dd(auth()->user());
-    	
-    	return view('dashboard');
-
-}
-→ Click on the attribute to find all the sql arrays: now we know auth→ user returning its object.
-
 ```
-### Authenticated state: if (auth()→ check()) or auth() → user())
+## Authenticated state
 ```
-@if(auth()->user())
-		<li><a href="" class="p-3">Britu</a></li>
-		<li><a href="" class="p-3">Logout</a></li>
-	@else
-		<li><a href="" class="p-3">Log out</a></li>
-		<li><a href="{{ route('register') }}" class="p-3">Register</a></li>
-	@endif
+--> app.blade.php
 
-Better way to do this:
-@auth
-@endauth
-@guest
-@endguest
+<ul class="flex items-center">
+            @if(auth()->user())
+                <li><a href="" class="p-3">Britu</a></li>
+                <li> <a href="" class="p-3">Logout</a></li>
+            @else
+				<li><a href="" class="p-3">Log In</a></li>
+				<li><a href="{{route('register')}}" class="p-3">Register</a></li>
+            @endif
 
+</ul>
 ```
-### Let’s Login, done form and login 
+
+## Login State
 ```
-Go to the Command line
 php artisan make:controller Auth\\LoginController
-→ web.php :- make a Route get and post  login and import the LoginController:
-Route::get('/login', [LoginController::class, 'index']) -> name('login');
+
+Routes->Web.php
+Route::get('/login', [LoginController::class, 'index'])-> name('login');
 Route::post('/login', [LoginController::class, 'store']);
+
+
 → LoginController.php:- 
    public function index()
     {return view('auth.login');}
@@ -355,8 +337,50 @@ Route::post('/login', [LoginController::class, 'store']);
     	dd('ok');
     }
 
-Go to the resources→ views→ auth→ create login.blade.php 
-Copy all the code from register.blade.php and paste it and amend it for Login form
+->resources→ views→ auth→ create login.blade.php 
+@extends('layouts.app')
+
+@section('content')
+
+<div class="flex justify-center ">
+	<div class="w-4/12 bg-white p-6 rounded-lg">
+		<form action="{{route('login')}}" method="post">
+            @csrf
+
+
+			<div class="mb-4">
+				<label for="email" class="sr-only">Email</label>
+                <input type="text" name="email" id="email" placeholder="Your Email" class="bg-gray-100 border-2 w-full p-4 rounded-lg @error('email') border-red-500 @enderror" value="{{ old('email')}}">
+                @error('email')
+                    <div class="text-red-500 mt-2 text-sm">
+                        {{$message}}
+                    </div>
+                @enderror
+			</div>
+
+			<div class="mb-4">
+				<label for="name" class="sr-only">password</label>
+                <input type="password" name="password" id="password" placeholder="Place your password" class="bg-gray-100 border-2 w-full p-4 rounded-lg @error('password') border-red-500 @enderror" value="">
+                @error('password')
+                    <div class="text-red-500">
+                        {{$message}}
+                    </div>
+                @enderror
+			</div>
+
+
+			<button type="submit" class="bg-blue-500 text-white px-4 py-3 rounded font-medium w-full">Register</button>
+
+		</form>
+	</div>
+</div>
+
+
+@endsection
+
+
+--> LoginController:
+
 class LoginController extends Controller
 {
     public function index()
