@@ -139,16 +139,16 @@ Npm install → npm install tailwind → npm run dev → npm watch
 
 <div class="flex justify-center ">
 	<div class="w-4/12 bg-white p-6 rounded-lg">
-		<form action="{{ route('register') }}" method="post">
-			@csrf
+		<form action="" method="post">
+
 			<div class="mb-4">
 				<label for="name" class="sr-only">Name</label>
-				<input type="text" name="name" id="name" placeholder="Your name" class="bg-gray-100 border-2 w-full p-4 rounded-lg @error('name')border-red-500 @enderror" value="">
-				@error('name')
+				<input type="text" name="name" id="name" placeholder="Your name" class="bg-gray-100 border-2 w-full p-4 rounded-lg"  value="">
+
 					<div class="text-red-500 mt-2 text-sm">
-						{{ $message }}
+
 					</div>
-				@enderror
+
 			</div>
 
 			<div class="mb-4">
@@ -177,7 +177,9 @@ Npm install → npm install tailwind → npm run dev → npm watch
 	</div>
 </div>
 
+
 @endsection
+
 ```
 ## Running Migration:
 ```
