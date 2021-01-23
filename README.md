@@ -616,7 +616,19 @@ Collection is warapper of list of items
 -> create a post and have a look into the database.
 
 for one line 
-Postcontroller-> $request ->user()->posts()->create($request->only('body'));
+Postcontroller->
+
+ public function store(Request $request)
+    {
+        $this->validate($request, [
+            'body'=>'required'
+        ]);
+
+        $request ->user()->posts()->create($request->only('body'));
+
+        return back();
+
+    }
 ```
 ## Listing Post
 ```
