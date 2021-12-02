@@ -1,3 +1,12 @@
+## Laravel VS-Code extention
+	```
+		Laravel Blade formatter
+		Laravel Blade Snippets
+		Laravel blade Spacer
+		PHP Namespace Resoler
+		Laravel-goto-controller
+		laravel goto view
+	```
 ### Fasad is wrapper for functionality
 ### public function likedBy(User $user)
     {
